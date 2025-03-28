@@ -4,24 +4,30 @@ class PhotosController < ApplicationController
 
   # GET /photos or /photos.json
   def index
+    # authorize @photo
     @photos = Photo.all
   end
 
   # GET /photos/1 or /photos/1.json
   def show
+    authorize @photo
   end
 
   # GET /photos/new
   def new
+    authorize @photo
     @photo = Photo.new
   end
 
   # GET /photos/1/edit
   def edit
+    authorize @photo
+    # The ensure_current_user_is_owner callback will redirect if the user is not the owner
   end
 
   # POST /photos or /photos.json
   def create
+    authorize @photo
     @photo = Photo.new(photo_params)
     @photo.owner = current_user
 
@@ -38,6 +44,7 @@ class PhotosController < ApplicationController
 
   # PATCH/PUT /photos/1 or /photos/1.json
   def update
+    authorize @photo
     respond_to do |format|
       if @photo.update(photo_params)
         format.html { redirect_to @photo, notice: "Photo was successfully updated." }
@@ -51,6 +58,7 @@ class PhotosController < ApplicationController
 
   # DELETE /photos/1 or /photos/1.json
   def destroy
+    authorize @photo
     if current_user == @photo.owner
       @photo.destroy
       respond_to do |format|
@@ -78,4 +86,5 @@ class PhotosController < ApplicationController
         redirect_back fallback_location: root_url, alert: "You're not authorized for that."
       end
     end
+
 end

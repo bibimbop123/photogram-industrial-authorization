@@ -1,5 +1,6 @@
 class LikesController < ApplicationController
   before_action :set_like, only: %i[ show edit update destroy ]
+  before_action { authorize(@like || Like) }
 
   # GET /likes or /likes.json
   def index
@@ -17,12 +18,14 @@ class LikesController < ApplicationController
 
   # GET /likes/1/edit
   def edit
+    # The ensure_current_user_is_owner callback will redirect if the user is not the owner
   end
 
   # POST /likes or /likes.json
   def create
-    @like = Like.new(like_params)
-
+    @like = current_user.likes.build(like_params)  # Instantiate a Like instance
+     # ✅ Pass the instance to LikePolicy
+  
     respond_to do |format|
       if @like.save
         format.html { redirect_back fallback_location: @like.photo, notice: "Like was successfully created." }
@@ -33,6 +36,7 @@ class LikesController < ApplicationController
       end
     end
   end
+  
 
   # PATCH/PUT /likes/1 or /likes/1.json
   def update

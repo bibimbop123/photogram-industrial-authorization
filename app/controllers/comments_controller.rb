@@ -4,16 +4,19 @@ class CommentsController < ApplicationController
 
   # GET /comments or /comments.json
   def index
+    authorize Comment, :index?
     @comments = Comment.all
   end
 
   # GET /comments/1 or /comments/1.json
   def show
+    authorize @comment
   end
 
   # GET /comments/new
   def new
     @comment = Comment.new
+    authorize @comment
   end
 
   # GET /comments/1/edit
@@ -22,9 +25,10 @@ class CommentsController < ApplicationController
 
   # POST /comments or /comments.json
   def create
-    @comment = Comment.new(comment_params)
-    @comment.author = current_user
-
+    @comment = current_user.comments.build(comment_params)
+    puts @comment.class.name # Debug: Ensure this outputs "Comment"
+    authorize @comment
+ 
     respond_to do |format|
       if @comment.save
         format.html { redirect_back fallback_location: root_path, notice: "Comment was successfully created." }

@@ -1,14 +1,17 @@
 class ApplicationController < ActionController::Base
-    # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-    allow_browser versions: :modern
+  include Pundit::Authorization
+
+  # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
+  allow_browser versions: :modern
 
   before_action :authenticate_user!
-  before_action :set_user_search, if: -> { current_user.present? }
   before_action :configure_permitted_parameters, if: :devise_controller?
 
-  def set_user_search
-    @q = User.where.not(id: current_user.id).ransack(params[:q])
-  end
+  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+  after_action :verify_authorized, unless: :devise_controller?
+  after_action :verify_policy_scoped, only: :index, unless: :devise_controller?
+
+
 
   protected
 
@@ -21,7 +24,7 @@ class ApplicationController < ActionController::Base
 
   def user_not_authorized
     flash[:alert] = "You are not authorized to perform this action."
-
-    redirect_back(fallback_location: root_url)
+    redirect_back fallback_location: root_url
   end
+
 end
